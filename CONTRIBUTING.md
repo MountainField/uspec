@@ -25,6 +25,6 @@ If `Signed-off-by` is attached to the commit message, it is regarded as agreed t
 
 1. Clone this repo (`git clone git@github.com:MountainField/uspec.git`)
 2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -s -am 'Add some feature'`)
+3. Commit your changes (`git commit -s -m 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
