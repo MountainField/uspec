@@ -12,12 +12,12 @@
 from __future__ import unicode_literals, print_function, division
 
 __version__ = "1.0.22"
-__description__ = "RSpec like BDD tool based on unittest"
+__description__ = "RSpec like behavior driven development (BDD) tool based on unittest"
 __author__ = "Takahide Nogayama"
 __author_email__ = "NOGAYAMA@gmail.com"
 __url__ = "https://github.com/MountainField/uspec"
 __download_url__ = "https://github.com/MountainField/uspec/releases"
-__license__ = "IBM"
+__license__ = "MIT"
 
 from abc import ABCMeta, abstractmethod
 import contextlib as _contextlib

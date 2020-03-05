@@ -1,6 +1,8 @@
 # USpec
 
-[uspec](https://github.com/MountainField/uspec) is
+[USpec](https://github.com/MountainField/uspec) is a *Behaviour-Driven Development* tool for Python developers.
+
+USpec provides a Rspec like specification format, and generates tests executable by [unittest](https://docs.python.org/3/library/unittest.html) .
 
 
 
@@ -20,10 +22,19 @@ Usage
 
 
 
+Test
+----
+
+```bash
+$ python -m unittest discover -s tests -p "*.py" -v
+```
+
+
+
 Author
 ------
 
-* **Takahide Nogayama** - [Nogayama](https://github.com/nogayama)
+- **Takahide Nogayama** - [Nogayama](https://github.com/nogayama)
 
 
 

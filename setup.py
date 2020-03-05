@@ -22,6 +22,10 @@ if __name__ == "__main__":
                 pycode4meta += line
     exec(pycode4meta)
     
+    _long_description=__description__
+    with io.open("README.md", "rt", encoding="UTF-8") as f:
+        _long_description = f.read()
+    
     setup(
         name="uspec",
         version=__version__,
@@ -32,8 +36,13 @@ if __name__ == "__main__":
         download_url=__download_url__,
         license=__license__,
         
+        long_description=_long_description,
+        long_description_content_type="text/markdown",
+        
+        python_requires='>=3.0',
+        
         package_dir={
-            '': 'src'
+            "": "src"
             },
         py_modules=[
             "uspec",
@@ -42,4 +51,18 @@ if __name__ == "__main__":
             "scripts/uspec",
             ],
         test_suite="tests",
+        
+        classifiers=[
+            "Development Status :: 4 - Beta",
+            "Environment :: Console",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved :: MIT License",
+            "Operating System :: OS Independent",
+            "Topic :: Documentation",
+            "Topic :: Software Development :: Documentation",
+            "Topic :: Software Development :: Quality Assurance",
+            "Topic :: Software Development :: Testing",
+            "Programming Language :: Python",
+            "Programming Language :: Python :: 3",
+      ],
     )
