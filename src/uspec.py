@@ -11,7 +11,7 @@
 
 from __future__ import unicode_literals, print_function, division
 
-__version__ = "1.0.22"
+__version__ = "1.0.23"
 __description__ = "RSpec like behavior driven development (BDD) tool based on unittest"
 __author__ = "Takahide Nogayama"
 __author_email__ = "NOGAYAMA@gmail.com"
@@ -501,16 +501,16 @@ def expect_that(name, shared_example_function, *args, **kwargs):
 #     return (status, stdout_str, stderr_str)
 
 
-def execute_command(cmd, shell=False, encoding="UTF-8", errors="replace"):
+def execute_command(cmd, **popen_kwargs):
     _LOGGER.info("Executing command: %s", cmd)
     
     import subprocess
-    p = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding=encoding, errors=errors)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **popen_kwargs)
     stdout, stderr = p.communicate()
     status = p.returncode
     
     if _LOGGER.isEnabledFor(_logging.INFO):
-        if encoding is None: 
+        if not isinstance(stdout, str): 
             stdout_text = stdout.decode(encoding="UTF-8", errors="replace")  # 
             stderr_text = stderr.decode(encoding="UTF-8", errors="replace")
         else:
@@ -521,22 +521,25 @@ def execute_command(cmd, shell=False, encoding="UTF-8", errors="replace"):
     return (status, stdout, stderr)
 
 
-def execute_shellscript(script, shell=False, encoding="UTF-8", errors="replace"):
+def execute_shellscript(script, **popen_kwargs):
     import io
     import tempfile
 
     _LOGGER.info("Executing shellscript: %s", script)
+
+    encoding = popen_kwargs.get("encoding", "UTF-8")
+    errors = popen_kwargs.get("errors", "replace")
     
     _, temp_file = tempfile.mkstemp(suffix='', prefix='')
     with io.open(temp_file, "wt", encoding=encoding, errors=errors) as f:
         f.write(script)
     
-    return execute_command(["/bin/bash", temp_file], shell=shell, encoding=encoding, errors=errors)
+    return execute_command(["/bin/bash", temp_file], **popen_kwargs)
 
 
-def check_command(test, cmd, expected_status=None, expected_stdout=None, expected_stderr=None, shell=False, encoding="UTF-8", errors="replace"):
+def check_command(test, cmd, expected_status=None, expected_stdout=None, expected_stderr=None, **popen_kwargs):
     
-    (status, stdout, stderr) = execute_command(cmd, shell, encoding, errors)
+    (status, stdout, stderr) = execute_command(cmd, **popen_kwargs)
 
     if expected_status is not None and status != expected_status and status != 0:
         _sys.stderr.write("\n====stderr start====\n")
