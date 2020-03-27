@@ -288,6 +288,7 @@ def _context(context_type, *args, **kwargs):
             parent_frame.f_locals['context_stack'] = context_stack
         
         context = _Context(context_type, context_stack, *args, **kwargs)
+        context.frame = parent_frame
         context_stack.append(context)
 
         for name, value in context.properties.items():
@@ -303,7 +304,7 @@ def _context(context_type, *args, **kwargs):
     yargs = list(args)
     if kwargs:
         yargs.extend([v for k, v in kwargs.items()])
-    yield yargs
+    yield context.subject, yargs
     
     frame = _inspect.currentframe()
     try:
@@ -319,10 +320,18 @@ def _context(context_type, *args, **kwargs):
                     parent_frame.f_locals[name] = context._backup_properties[name]
 
         # Declare the test class to be found by unittest loader
-        if context.test_class.__name__ not in parent_frame.f_globals:
-            if len([method_name for method_name in dir(context.test_class) if method_name.startswith(TEST_METHOD_PREFIX)]) > 0:
+#         if context.test_class.__name__ not in parent_frame.f_globals:
+#             if len([method_name for method_name in dir(context.test_class) if method_name.startswith(TEST_METHOD_PREFIX)]) > 0:
+#                 _LOGGER.debug("Declaring test_class %s", context.test_class.__name__)
+#                 parent_frame.f_globals[context.test_class.__name__] = context.test_class
+#             else:
+#                 _LOGGER.debug("Skipping declaration of test_class %s because it does not have any test method.", context.test_class.__name__)
+        root_context = context_stack[0]
+        if context.test_class.__name__ not in root_context.frame.f_globals:
+            test_method_names = [method_name for method_name in dir(context.test_class) if method_name.startswith(TEST_METHOD_PREFIX)]
+            if len(test_method_names) > 0:
                 _LOGGER.debug("Declaring test_class %s", context.test_class.__name__)
-                parent_frame.f_globals[context.test_class.__name__] = context.test_class
+                root_context.frame.f_globals[context.test_class.__name__] = context.test_class
             else:
                 _LOGGER.debug("Skipping declaration of test_class %s because it does not have any test method.", context.test_class.__name__)
 
@@ -386,7 +395,10 @@ class It(object):
         return leaf_context.it(message, *args, **kwargs)
     
     def behaves_like(self, shared_exmple_name, *args, **kwargs):
-
+        
+        if shared_exmple_name not in _NAME2SHARED_EXAMPLE:
+            raise ValueError("shared_example '%s' is not registered" % shared_exmple_name)
+        
         frame = _inspect.currentframe()
         try:
             parent_frame = frame.f_back
@@ -396,7 +408,6 @@ class It(object):
             context_stack = parent_frame.f_locals["context_stack"]
             if len(context_stack) == 0:
                 raise ValueError("No context was found")
-            leaf_context = context_stack[-1]
         finally:
             del frame
         
@@ -406,7 +417,9 @@ class It(object):
         shared_example_func = _NAME2SHARED_EXAMPLE[shared_exmple_name]
         
         kwargs["context_stack"] = context_stack
-        shared_example_func(actual_subject, *args, **kwargs)
+        
+        with context("behaves like " + shared_exmple_name):
+            shared_example_func(actual_subject, *args, **kwargs)
 
 
 it = It()
@@ -543,7 +556,9 @@ def check_command(test, cmd, expected_status=None, expected_stdout=None, expecte
 
     if expected_status is not None and status != expected_status and status != 0:
         _sys.stderr.write("\n====stderr start====\n")
-        _sys.stderr.write(stderr)
+        if not isinstance(stderr, str): 
+            stderr_text = stderr.decode(encoding="UTF-8", errors="replace")
+        _sys.stderr.write(stderr_text)
         _sys.stderr.write("\n====stderr end  ====\n")
     if expected_status is not None:
         test.assertEqual(status, expected_status)
