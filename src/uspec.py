@@ -11,7 +11,7 @@
 
 from __future__ import unicode_literals, print_function, division
 
-__version__ = "1.0.23"
+__version__ = "1.0.24"
 __description__ = "RSpec like behavior driven development (BDD) tool based on unittest"
 __author__ = "Takahide Nogayama"
 __author_email__ = "NOGAYAMA@gmail.com"
@@ -39,6 +39,7 @@ _LOGGER.setLevel(_logging.WARN)
 
 # This is same as unittest.TestLoader.testMethodPrefix
 TEST_METHOD_PREFIX = "test"
+TEST_CLASS_PREFIX = "T"
 
 _EXAMPLE_COUNTER = 0
 _EXAMPLE_GROUP_COUNTER = 0
@@ -113,13 +114,13 @@ class _Context(object):
         test_class = kwargs.get("test_class", None)
         if test_class is None:
             # Create Class name
-            test_class_name = "Test" + str(_EXAMPLE_GROUP_COUNTER)
+            test_class_name = TEST_CLASS_PREFIX + "{0:04}".format(_EXAMPLE_GROUP_COUNTER)
             _EXAMPLE_GROUP_COUNTER += 1
-            for context in context_stack:
-                if context.context_type is _TYPE_DESCRIBE:
-                    test_class_name += context.name
-            if self.context_type is _TYPE_DESCRIBE:
-                test_class_name += self.name
+            # for context in context_stack:
+            #     if context.context_type is _TYPE_DESCRIBE:
+            #         test_class_name += context.name
+            # if self.context_type is _TYPE_DESCRIBE:
+            #     test_class_name += self.name
             # Create Test Class 
             test_class = type(test_class_name, (_unittest.TestCase,), {})
             kwargs["test_class"] = test_class
@@ -173,7 +174,7 @@ class _Context(object):
         # desc = cw.ensure_text(desc)
         desc = desc.replace("\n", "\\n")
         
-        test_name = TEST_METHOD_PREFIX + "{0:04}: ".format(_EXAMPLE_COUNTER) + " ".join([str(c) for c in self.context_stack]) + " " + desc
+        test_name = TEST_METHOD_PREFIX + "{0:05} ".format(_EXAMPLE_COUNTER) + " ".join([str(c) for c in self.context_stack]) + " " + desc
         
         verification_func = self._get_property("verification_func")
         if callable(verification_func):
